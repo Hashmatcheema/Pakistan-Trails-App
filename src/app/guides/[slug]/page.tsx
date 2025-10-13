@@ -23,9 +23,8 @@ import { getGuideBySlug, getGuides } from '@/lib/database'
 import { formatDate } from '@/lib/utils'
 
 interface GuidePageProps {
-  params: {
-    slug: string
-  }
+  params: Promise<{ slug: string }>
+
 }
 
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
@@ -64,7 +63,9 @@ export async function generateStaticParams() {
 }
 
 export default async function GuidePage({ params }: GuidePageProps) {
-  const guide = await getGuideBySlug(params.slug)
+  const { slug } = await params // ✅ await the promise
+
+  const guide = await getGuideBySlug(slug)
   
   if (!guide) {
     notFound()
