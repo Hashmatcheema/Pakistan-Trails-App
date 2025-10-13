@@ -1,3 +1,4 @@
+//src/components/trails/trail-map.tsx
 'use client'
 
 import { useEffect, useRef } from 'react'

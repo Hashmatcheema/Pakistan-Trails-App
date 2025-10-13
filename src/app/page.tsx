@@ -1,3 +1,4 @@
+//src/app/page.tsx
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, MapPin, Clock, Mountain, Users, Star, Play } from 'lucide-react'

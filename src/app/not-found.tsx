@@ -1,3 +1,4 @@
+//src/app/not-found.tsx
 import Link from 'next/link'
 import { ArrowLeft, Mountain, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'

@@ -1,3 +1,4 @@
+//src/lib/mapbox.ts
 import mapboxgl from 'mapbox-gl'
 import { Trail, MapMarker } from '@/types'
 

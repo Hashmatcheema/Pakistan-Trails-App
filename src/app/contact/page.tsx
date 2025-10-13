@@ -1,3 +1,4 @@
+//src/app/contact/page.tsx
 import { Metadata } from 'next'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
