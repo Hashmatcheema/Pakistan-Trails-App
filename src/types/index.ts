@@ -1,5 +1,6 @@
+//src/types/index.ts
 // Core data types for Pakistan Trails
-
+  
 export interface Region {
   id: string;
   slug: string;
@@ -22,7 +23,7 @@ export interface Trail {
   elevation_gain_m: number;
   duration_h: number;
   gpx_url?: string;
-  geojson?: any;
+  geojson?: Record<string, unknown> | null;
   start_point: {
     lat: number;
     lng: number;
@@ -46,7 +47,7 @@ export interface Guide {
   slug: string;
   title: string;
   excerpt: string;
-  body: any; // Portable Text
+  body: Record<string, unknown>[];
   region_id: string;
   region?: Region;
   best_time: string;

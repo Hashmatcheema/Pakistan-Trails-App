@@ -1,3 +1,4 @@
+//src/app/about/page.tsx
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { Mountain, Heart, Users, MapPin, Star, Award } from 'lucide-react'

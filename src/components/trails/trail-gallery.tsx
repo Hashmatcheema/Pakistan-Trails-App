@@ -1,9 +1,11 @@
+//src/components/trails/trail-gallery.tsx
 'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 interface TrailGalleryProps {
   photos: string[]
@@ -66,7 +68,6 @@ export function TrailGallery({ photos, title }: TrailGalleryProps) {
             </button>
           ))}
         </div>
-
         {/* Lightbox */}
         {selectedIndex !== null && (
           <div
@@ -83,7 +84,6 @@ export function TrailGallery({ photos, title }: TrailGalleryProps) {
                 className="max-h-[90vh] max-w-[90vw] object-contain"
                 priority
               />
-              
               {/* Close Button */}
               <Button
                 variant="ghost"
@@ -93,7 +93,6 @@ export function TrailGallery({ photos, title }: TrailGalleryProps) {
               >
                 <X className="h-6 w-6" />
               </Button>
-              
               {/* Navigation Buttons */}
               {photos.length > 1 && (
                 <>
@@ -115,7 +114,6 @@ export function TrailGallery({ photos, title }: TrailGalleryProps) {
                   </Button>
                 </>
               )}
-              
               {/* Image Counter */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                 {selectedIndex + 1} / {photos.length}

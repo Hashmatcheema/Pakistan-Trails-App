@@ -1,5 +1,5 @@
 //src/lib/supabase.ts
-//src/lib/supabase.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from '@supabase/supabase-js'
 import { createBrowserClient, createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
