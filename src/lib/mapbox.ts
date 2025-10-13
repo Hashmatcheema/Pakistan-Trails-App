@@ -3,8 +3,10 @@ import { Trail, MapMarker } from '@/types'
 
 // Initialize Mapbox
 export function initializeMapbox() {
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  } else {
+    console.error('Mapbox access token is missing or invalid');
   }
 }
 

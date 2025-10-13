@@ -4,7 +4,7 @@ import { MapPin, Clock, Mountain, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Trail } from '@/types'
-import { formatDistance, formatDuration, formatElevation, getDifficultyColor, getDifficultyLabel, getRegionLabel } from '@/lib/utils'
+import { formatDistance, formatDuration, formatElevation, getDifficultyColor, getDifficultyLabel } from '@/lib/utils'
 
 interface TrailCardProps {
   trail: Trail
@@ -19,9 +19,10 @@ export function TrailCard({ trail, view }: TrailCardProps) {
           {/* Image */}
           <div className="relative h-48 w-full sm:h-32 sm:w-48 flex-shrink-0">
             <Image
-              src={trail.photos[0] || '/placeholder-trail.jpg'}
+              src={trail.photos?.[0] || '/placeholder-trail.jpg'}
               alt={trail.title}
               fill
+              sizes="(max-width: 768px) 100vw, 192px"
               className="object-cover transition-transform group-hover:scale-105"
             />
             <div className="absolute top-3 left-3">
@@ -32,7 +33,7 @@ export function TrailCard({ trail, view }: TrailCardProps) {
             <div className="absolute top-3 right-3">
               <span className="inline-flex items-center rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white">
                 <MapPin className="mr-1 h-3 w-3" />
-                {trail.region?.name}
+                {trail.region?.name || 'Pakistan'}
               </span>
             </div>
           </div>
@@ -41,7 +42,7 @@ export function TrailCard({ trail, view }: TrailCardProps) {
           <div className="flex-1 p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1">
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                <CardTitle className="text-xl group-hover:text-primary-600 transition-colors">
                   <Link href={`/trails/${trail.slug}`}>
                     {trail.title}
                   </Link>
@@ -87,9 +88,10 @@ export function TrailCard({ trail, view }: TrailCardProps) {
     <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
       <div className="relative h-48 overflow-hidden">
         <Image
-          src={trail.photos[0] || '/placeholder-trail.jpg'}
+          src={trail.photos?.[0] || '/placeholder-trail.jpg'}
           alt={trail.title}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -105,13 +107,13 @@ export function TrailCard({ trail, view }: TrailCardProps) {
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white">
             <MapPin className="mr-1 h-3 w-3" />
-            {trail.region?.name}
+            {trail.region?.name || 'Pakistan'}
           </span>
         </div>
       </div>
       
       <CardHeader>
-        <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
+        <CardTitle className="line-clamp-2 group-hover:text-primary-600 transition-colors">
           <Link href={`/trails/${trail.slug}`}>
             {trail.title}
           </Link>

@@ -15,6 +15,8 @@ function HeroSection() {
           src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop"
           alt="Northern Pakistan Mountains"
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+
           className="object-cover"
           priority
         />
@@ -77,6 +79,7 @@ async function FeaturedGuides() {
                   src={guide.featured_image}
                   alt={guide.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover transition-transform group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -142,6 +145,8 @@ async function LatestBlogStories() {
                   src={post.featured_image}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+
                   className="object-cover transition-transform group-hover:scale-105"
                 />
                 <div className="absolute top-4 left-4">
@@ -262,6 +267,7 @@ function VideoHubTeaser() {
                   src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop"
                   alt="Hunza Valley Adventure"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40" />

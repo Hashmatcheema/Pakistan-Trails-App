@@ -1,3 +1,4 @@
+//src/app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, Lora, Poppins } from "next/font/google";
 import "./globals.css";
@@ -86,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${lora.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${inter.variable} ${lora.variable} ${poppins.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-screen bg-background font-sans antialiased">
         <div className="relative flex min-h-screen flex-col">
           <Header />

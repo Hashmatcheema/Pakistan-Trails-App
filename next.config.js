@@ -2,7 +2,24 @@
 const nextConfig = {
   serverExternalPackages: ['@react-pdf/renderer'],
   images: {
-    domains: ['images.unsplash.com', 'res.cloudinary.com', 'cdn.sanity.io'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.unsplash.com',
+      }
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   async headers() {
@@ -28,4 +45,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default nextConfig

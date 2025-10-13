@@ -1,3 +1,5 @@
+--supabase/migrations/002_seed_data.sql
+
 -- Insert regions
 INSERT INTO regions (id, slug, name, description, cover_image) VALUES
 ('550e8400-e29b-41d4-a716-446655440001', 'hunza', 'Hunza Valley', 'A breathtaking valley in northern Pakistan known for its stunning mountain views and rich culture.', 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800'),

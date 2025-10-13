@@ -21,20 +21,21 @@ export const metadata: Metadata = {
 }
 
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     category?: string
     search?: string
     page?: string
-  }
+  }>
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const page = Number(searchParams.page) || 1
+  const { category, search, page: pageParam } = await searchParams // Await searchParams
+  const page = Number(pageParam) || 1
   const postsResult = await getBlogPosts(page, 12)
 
   const { data: posts, pagination } = postsResult
 
-  const categories = [
+  const categories = [ 
     'Adventure Stories',
     'Hidden Gems',
     'Hiking Fails',
@@ -96,9 +97,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <h2 className="text-2xl font-bold text-gray-900">
                 {pagination.total} Stories
               </h2>
-              {searchParams.search && (
+              {search && (
                 <p className="mt-2 text-gray-600">
-                  Results for "{searchParams.search}"
+                  Results for "{search}"
                 </p>
               )}
             </div>
@@ -112,6 +113,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       src={post.featured_image}
                       alt={post.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -198,7 +200,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 >
                   <Link href={{
                     pathname: '/blog',
-                    query: { ...searchParams, page: pagination.page - 1 }
+                    query: { category, search, page: pagination.page - 1 }
                   }}>
                     Previous
                   </Link>
@@ -215,7 +217,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 >
                   <Link href={{
                     pathname: '/blog',
-                    query: { ...searchParams, page: pagination.page + 1 }
+                    query: { category, search, page: pagination.page + 1 }
                   }}>
                     Next
                   </Link>
