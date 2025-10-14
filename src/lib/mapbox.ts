@@ -1,6 +1,7 @@
 //src/lib/mapbox.ts
 import mapboxgl from 'mapbox-gl'
 import { Trail, MapMarker } from '@/types'
+import type { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
 
 // Initialize Mapbox
 export function initializeMapbox() {
@@ -12,9 +13,9 @@ export function initializeMapbox() {
 }
 
 // Create map instance
-export function createMap(container: string | HTMLElement, options: mapboxgl.MapboxOptions = {}) {
+export function createMap(container: string | HTMLElement, options: Omit<mapboxgl.MapboxOptions, 'container'> = {}) {
   initializeMapbox()
-  
+
   const defaultOptions: mapboxgl.MapboxOptions = {
     container,
     style: 'mapbox://styles/mapbox/outdoors-v12',
@@ -22,7 +23,7 @@ export function createMap(container: string | HTMLElement, options: mapboxgl.Map
     zoom: 6,
     ...options
   }
-  
+
   return new mapboxgl.Map(defaultOptions)
 }
 
@@ -163,7 +164,7 @@ export function createTrailClusters(map: mapboxgl.Map, trails: Trail[]) {
   // Add source
   map.addSource('trails', {
     type: 'geojson',
-    data: geojson,
+    data: geojson as FeatureCollection<Geometry, GeoJsonProperties>,
     cluster: true,
     clusterMaxZoom: 14,
     clusterRadius: 50
@@ -221,23 +222,47 @@ export function createTrailClusters(map: mapboxgl.Map, trails: Trail[]) {
   map.on('click', 'clusters', (e) => {
     const features = map.queryRenderedFeatures(e.point, {
       layers: ['clusters']
-    })
-    const clusterId = features[0].properties.cluster_id
-    
-    map.getSource('trails').getClusterExpansionZoom(clusterId, (err, zoom) => {
-      if (err) return
-      
-      map.easeTo({
-        center: features[0].geometry.coordinates,
-        zoom: zoom
-      })
-    })
-  })
+    });
+  
+    if (!features.length || !features[0].properties) return;
+  
+    const clusterId = features[0].properties.cluster_id;
+    if (typeof clusterId !== 'number') return;
+  
+    (map.getSource('trails') as mapboxgl.GeoJSONSource).getClusterExpansionZoom(
+      clusterId,
+      (err, zoom) => {
+        if (err || typeof zoom !== 'number') return;
+  
+        const geom = features[0].geometry;
+        if (geom.type === 'Point') {
+          map.easeTo({
+            center: geom.coordinates as [number, number],
+            zoom
+          });
+        }
+      }
+    );
+  });
+  
   
   map.on('click', 'unclustered-point', (e) => {
-    const coordinates = e.features[0].geometry.coordinates.slice()
-    const properties = e.features[0].properties
-    
+    if (!e.features || e.features.length === 0) return
+  
+    const feature = e.features[0]
+    if (!feature.properties || !feature.geometry) return
+  
+    // Ensure geometry is Point
+    if (feature.geometry.type !== 'Point') return
+    const coordinates = [...feature.geometry.coordinates] as [number, number]
+  
+    const properties = feature.properties as {
+      title: string
+      distance: number
+      difficulty: string
+      slug: string
+    }
+  
     new mapboxgl.Popup()
       .setLngLat(coordinates)
       .setHTML(`

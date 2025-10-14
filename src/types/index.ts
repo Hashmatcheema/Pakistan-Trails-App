@@ -1,6 +1,7 @@
 //src/types/index.ts
 // Core data types for Pakistan Trails
-  
+import type { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
+
 export interface Region {
   id: string;
   slug: string;
@@ -23,7 +24,7 @@ export interface Trail {
   elevation_gain_m: number;
   duration_h: number;
   gpx_url?: string;
-  geojson?: Record<string, unknown> | null;
+  geojson?: FeatureCollection<Geometry, GeoJsonProperties> | null; // ✅ Fixed
   start_point: {
     lat: number;
     lng: number;
