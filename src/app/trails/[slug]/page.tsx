@@ -30,8 +30,7 @@ interface TrailPageProps {
 }
 
 export async function generateMetadata({ params }: TrailPageProps): Promise<Metadata> {
-  const { slug } = await params // ✅ await the promise
-
+  const { slug } = await params
   const trail = await getTrailBySlug(slug)
   
   if (!trail) {
@@ -40,19 +39,22 @@ export async function generateMetadata({ params }: TrailPageProps): Promise<Meta
     }
   }
 
+  // Filter out undefined values for keywords
+  const keywords = [
+    trail.title,
+    trail.region?.name, // This might be undefined
+    'Pakistan hiking',
+    'trail guide',
+    'GPX download',
+    trail.difficulty,
+  ].filter((keyword): keyword is string => keyword !== undefined)
+
   return {
-    title: `${trail.title} - ${trail.region?.name} Hiking Trail`,
+    title: `${trail.title} - ${trail.region?.name || 'Pakistan'} Hiking Trail`,
     description: trail.description,
-    keywords: [
-      trail.title,
-      trail.region?.name,
-      'Pakistan hiking',
-      'trail guide',
-      'GPX download',
-      trail.difficulty,
-    ],
+    keywords,
     openGraph: {
-      title: `${trail.title} - ${trail.region?.name} Hiking Trail`,
+      title: `${trail.title} - ${trail.region?.name || 'Pakistan'} Hiking Trail`,
       description: trail.description,
       images: trail.photos.length > 0 ? [trail.photos[0]] : [],
     },
@@ -67,8 +69,8 @@ export async function generateStaticParams() {
 }
 
 export default async function TrailPage({ params }: TrailPageProps) {
-  const trail = await getTrailBySlug(params.slug)
-  
+  const resolvedParams = await params // ✅ await the promise
+  const trail = await getTrailBySlug(resolvedParams.slug)  
   if (!trail) {
     notFound()
   }
