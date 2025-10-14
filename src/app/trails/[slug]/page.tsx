@@ -25,13 +25,14 @@ import { TrailStats } from '@/components/trails/trail-stats'
 import { TrailSafety } from '@/components/trails/trail-safety'
 
 interface TrailPageProps {
-  params: {
-    slug: string
-  }
+   params: Promise<{ slug: string }>
+
 }
 
 export async function generateMetadata({ params }: TrailPageProps): Promise<Metadata> {
-  const trail = await getTrailBySlug(params.slug)
+  const { slug } = await params // ✅ await the promise
+
+  const trail = await getTrailBySlug(slug)
   
   if (!trail) {
     return {
