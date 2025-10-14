@@ -1,344 +1,252 @@
 //src/app/guides/[slug]/page.tsx
-import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
 import { Metadata } from 'next'
-import { 
-  MapPin, 
-  Clock, 
-  ArrowLeft, 
-  Calendar,
-  DollarSign,
-  Car,
-  Home,
-  Utensils,
-  Lightbulb,
-  Play,
-  Share2,
-  Star
-} from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight, MapPin, Clock, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getGuideBySlug, getGuides } from '@/lib/database'
+import { getGuides, getRegions } from '@/lib/database'
 import { formatDate } from '@/lib/utils'
 
-interface GuidePageProps {
-  params: Promise<{ slug: string }>
-
+// Define interfaces for Region and Guide
+interface Region {
+  id: string
+  name: string
 }
 
-export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
-  const guide = await getGuideBySlug(params.slug)
-  
-  if (!guide) {
-    return {
-      title: 'Guide Not Found',
-    }
-  }
-
-  return {
-    title: guide.seo_title || `${guide.title} - Complete Travel Guide`,
-    description: guide.seo_description || guide.excerpt,
-    keywords: [
-      guide.title,
-      guide.region?.name,
-      'Pakistan travel',
-      'travel guide',
-      'tourism',
-      'destination guide',
-    ],
-    openGraph: {
-      title: guide.seo_title || `${guide.title} - Complete Travel Guide`,
-      description: guide.seo_description || guide.excerpt,
-      images: [guide.featured_image],
-    },
-  }
+interface Guide {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  featured_image: string
+  region?: { name: string }
+  published_at: string
+  best_time?: string
+  cost_estimate?: string
 }
 
-export async function generateStaticParams() {
-  const guides = await getGuides()
-  return guides.data.map((guide) => ({
-    slug: guide.slug,
-  }))
+export const metadata: Metadata = {
+  title: 'Pakistan Travel Guides - Complete Destination Guides',
+  description: 'Comprehensive travel guides for Pakistan&apos;s most beautiful destinations. From Hunza to Skardu, Swat to Kumrat - plan your perfect adventure.',
+  keywords: [
+    'Pakistan travel guides',
+    'Hunza Valley guide',
+    'Skardu travel',
+    'Swat Valley guide',
+    'Pakistan tourism',
+    'travel planning Pakistan',
+    'destination guides',
+  ],
 }
 
-export default async function GuidePage({ params }: GuidePageProps) {
-  const { slug } = await params // ✅ await the promise
+interface GuidesPageProps {
+  searchParams: Promise<{
+    region?: string
+    search?: string
+    page?: string
+  }>
+}
 
-  const guide = await getGuideBySlug(slug)
-  
-  if (!guide) {
-    notFound()
-  }
+export default async function GuidesPage({ searchParams }: GuidesPageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const region = params.region
+  const search = params.search
 
-  // Get related guides
-  const relatedGuides = await getGuides(1, 3)
+  const guidesResult = await getGuides(page, 12, region)
+  const regions = await getRegions()
+
+  const { data: guides, pagination } = guidesResult
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[400px] overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src={guide.featured_image}
-            alt={guide.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-
-        <div className="relative z-10 flex h-full items-end">
-          <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-            <div className="max-w-3xl">
-              {/* Breadcrumb */}
-              <nav className="mb-4">
-                <Link 
-                  href="/guides" 
-                  className="inline-flex items-center text-white/80 hover:text-white transition-colors"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Guides
-                </Link>
-              </nav>
-
-              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                {guide.title}
-              </h1>
-              <p className="mt-4 text-lg text-gray-200 sm:text-xl">
-                {guide.excerpt}
-              </p>
-
-              {/* Quick Info */}
-              <div className="mt-6 flex flex-wrap items-center gap-6 text-white">
-                <div className="flex items-center">
-                  <MapPin className="mr-2 h-5 w-5" />
-                  {guide.region?.name}
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  {formatDate(guide.published_at)}
-                </div>
-                {guide.cost_estimate && (
-                  <div className="flex items-center">
-                    <DollarSign className="mr-2 h-5 w-5" />
-                    {guide.cost_estimate}
-                  </div>
-                )}
-              </div>
-            </div>
+      <section className="bg-gradient-to-r from-primary-500 to-secondary-500 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              Pakistan Travel Guides
+            </h1>
+            <p className="mt-4 text-lg text-primary-50 sm:text-xl">
+              Comprehensive guides to Pakistan&apos;s most beautiful destinations
+            </p>
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Overview */}
+        <div className="flex flex-col lg:flex-row lg:gap-8">
+          {/* Sidebar with Filters */}
+          <div className="lg:w-80">
             <Card>
               <CardHeader>
-                <CardTitle>📍 Overview</CardTitle>
+                <CardTitle>Filter by Region</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed text-lg">
-                    {guide.excerpt}
-                  </p>
+                <div className="space-y-2">
+                  <Link
+                    href="/guides"
+                    className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      !region 
+                        ? 'bg-primary-100 text-primary-700' 
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-primary-600'
+                    }`}
+                  >
+                    All Regions
+                  </Link>
+                  {regions.map((regionItem: Region) => (
+                    <Link
+                      key={regionItem.id}
+                      href={`/guides?region=${regionItem.id}`}
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        region === regionItem.id
+                          ? 'bg-primary-100 text-primary-700'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-primary-600'
+                      }`}
+                    >
+                      {regionItem.name}
+                    </Link>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Best Time to Visit */}
-            {guide.best_time && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Calendar className="mr-2 h-5 w-5" />
-                    📅 Best Time to Visit
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{guide.best_time}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* How to Get There */}
-            {guide.transport_notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Car className="mr-2 h-5 w-5" />
-                    🚌 How to Get There
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      {guide.transport_notes}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Accommodation */}
-            {guide.accommodation && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Home className="mr-2 h-5 w-5" />
-                    🏠 Accommodation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      {guide.accommodation}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Food & Culture */}
-            {guide.cost_estimate && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Utensils className="mr-2 h-5 w-5" />
-                    🥘 Local Food & Culture
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      {guide.cost_estimate}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Local Tips */}
-            {guide.transport_notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Lightbulb className="mr-2 h-5 w-5" />
-                    💡 Local Tips
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      {guide.transport_notes}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Video Section */}
-            {guide.youtube_embed_id && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Play className="mr-2 h-5 w-5" />
-                    ▶️ Watch Our Adventure
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="aspect-video rounded-lg overflow-hidden">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${guide.youtube_embed_id}`}
-                      title={guide.title}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share Guide
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Star className="mr-2 h-4 w-4" />
-                  Save Guide
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Results Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {pagination?.total || 0} Travel Guides
+              </h2>
+              {search && (
+                <p className="mt-2 text-gray-600">
+                  Results for &quot;{search}&quot;
+                </p>
+              )}
+              {region && (
+                <p className="mt-2 text-gray-600">
+                  Filtered by region: {regions.find((r: Region) => r.id === region)?.name}
+                </p>
+              )}
+            </div>
 
-            {/* Guide Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Guide Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="font-medium text-gray-900">Region</div>
-                  <div className="text-gray-600">{guide.region?.name}</div>
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900">Published</div>
-                  <div className="text-gray-600">{formatDate(guide.published_at)}</div>
-                </div>
-                {guide.best_time && (
-                  <div>
-                    <div className="font-medium text-gray-900">Best Time</div>
-                    <div className="text-gray-600">{guide.best_time}</div>
+            {/* Guides Grid */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {guides?.map((guide: Guide) => (
+                <Card key={guide.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
+                  <div className="relative h-48 overflow-hidden">
+                    <Image
+                      src={guide.featured_image || '/placeholder-guide.jpg'}
+                      alt={guide.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <span className="inline-flex items-center rounded-full bg-primary-600/90 px-2 py-1 text-xs font-medium text-white">
+                        <MapPin className="mr-1 h-3 w-3" />
+                        {guide.region?.name || 'Pakistan'}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-4 left-4">
+                      <span className="inline-flex items-center rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white">
+                        <Clock className="mr-1 h-3 w-3" />
+                        {formatDate(guide.published_at)}
+                      </span>
+                    </div>
                   </div>
-                )}
-                {guide.cost_estimate && (
-                  <div>
-                    <div className="font-medium text-gray-900">Cost Estimate</div>
-                    <div className="text-gray-600">{guide.cost_estimate}</div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Related Guides */}
-            {relatedGuides.data.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Related Guides</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {relatedGuides.data
-                      .filter(g => g.id !== guide.id)
-                      .slice(0, 3)
-                      .map((relatedGuide) => (
-                        <Link
-                          key={relatedGuide.id}
-                          href={`/guides/${relatedGuide.slug}`}
-                          className="block p-3 rounded-lg border border-gray-200 hover:border-primary hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="font-medium text-sm">{relatedGuide.title}</div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            {relatedGuide.region?.name}
-                          </div>
+                  <CardHeader>
+                    <CardTitle className="line-clamp-2 group-hover:text-primary-600 transition-colors">
+                      <Link href={`/guides/${guide.slug}`}>
+                        {guide.title}
+                      </Link>
+                    </CardTitle>
+                    <CardDescription className="line-clamp-3">
+                      {guide.excerpt}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="space-y-3">
+                      {/* Quick Info */}
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                        {guide.best_time && (
+                          <span className="inline-flex items-center">
+                            <Clock className="mr-1 h-3 w-3" />
+                            {guide.best_time}
+                          </span>
+                        )}
+                        {guide.cost_estimate && (
+                          <span className="inline-flex items-center">
+                            <Star className="mr-1 h-3 w-3" />
+                            {guide.cost_estimate}
+                          </span>
+                        )}
+                      </div>
+
+                      <Button asChild className="w-full">
+                        <Link href={`/guides/${guide.slug}`}>
+                          Read Guide
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* No Results */}
+            {(!guides || guides.length === 0) && (
+              <div className="text-center py-12">
+                <MapPin className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No guides found</h3>
+                <p className="mt-2 text-gray-600">
+                  Try adjusting your filters
+                </p>
+                <Button asChild className="mt-4">
+                  <Link href="/guides">View All Guides</Link>
+                </Button>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center space-x-2">
+                <Button
+                  variant="outline"
+                  disabled={pagination.page === 1}
+                  asChild
+                >
+                  <Link href={{
+                    pathname: '/guides',
+                    query: { ...params, page: pagination.page - 1 }
+                  }}>
+                    Previous
+                  </Link>
+                </Button>
+
+                <span className="text-sm text-gray-600">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  disabled={pagination.page === pagination.totalPages}
+                  asChild
+                >
+                  <Link href={{
+                    pathname: '/guides',
+                    query: { ...params, page: pagination.page + 1 }
+                  }}>
+                    Next
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>

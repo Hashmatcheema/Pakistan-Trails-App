@@ -26,7 +26,7 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="mt-4 text-lg text-primary-foreground/90 sm:text-xl">
-              Have questions about Pakistan travel? Want to collaborate? We'd love to hear from you!
+              Have questions about Pakistan travel? Want to collaborate? We&apos;d love to hear from you!
             </p>
           </div>
         </div>
@@ -39,7 +39,7 @@ export default function ContactPage() {
             <CardHeader>
               <CardTitle>Send us a Message</CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you within 24 hours.
+                Fill out the form below and we&apos;ll get back to you within 24 hours.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -159,7 +159,7 @@ export default function ContactPage() {
                   <div>
                     <div className="font-medium text-gray-900">Location</div>
                     <div className="text-gray-600">Islamabad, Pakistan</div>
-                    <div className="text-sm text-gray-500">We're based in the capital</div>
+                    <div className="text-sm text-gray-500">We&apos;re based in the capital</div>
                   </div>
                 </div>
 
@@ -188,13 +188,13 @@ export default function ContactPage() {
                 <div>
                   <div className="font-medium text-gray-900">Can I suggest a new trail?</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    Absolutely! We love discovering new trails. Use the "Trail Suggestion" subject.
+                    Absolutely! We love discovering new trails. Use the &quot;Trail Suggestion&quot; subject.
                   </div>
                 </div>
                 <div>
                   <div className="font-medium text-gray-900">Do you offer guided tours?</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    We don't offer tours directly, but we can connect you with trusted local guides.
+                    We don&apos;t offer tours directly, but we can connect you with trusted local guides.
                   </div>
                 </div>
               </CardContent>

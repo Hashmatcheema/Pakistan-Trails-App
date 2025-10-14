@@ -4,9 +4,15 @@ import Image from 'next/image'
 import { Mountain, Heart, Users, MapPin, Star, Award } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+// Define Stat interface for the stats array
+interface Stat {
+  label: string
+  value: string
+}
+
 export const metadata: Metadata = {
   title: 'About Pakistan Trails - Our Mission & Story',
-  description: 'Learn about Pakistan Trails, our mission to showcase Pakistan\'s natural beauty, and our commitment to responsible tourism.',
+  description: 'Learn about Pakistan Trails, our mission to showcase Pakistan&apos;s natural beauty, and our commitment to responsible tourism.',
   keywords: [
     'about Pakistan Trails',
     'Pakistan tourism mission',
@@ -16,6 +22,13 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
+  const stats: Stat[] = [
+    { label: 'Trails Mapped', value: '50+' },
+    { label: 'Travel Guides', value: '25+' },
+    { label: 'Happy Explorers', value: '10K+' },
+    { label: 'Adventure Stories', value: '100+' },
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -26,7 +39,7 @@ export default function AboutPage() {
               About Pakistan Trails
             </h1>
             <p className="mt-4 text-lg text-primary-foreground/90 sm:text-xl">
-              Your trusted companion for exploring Pakistan's natural wonders
+              Your trusted companion for exploring Pakistan&apos;s natural wonders
             </p>
           </div>
         </div>
@@ -40,19 +53,19 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
               <div className="prose max-w-none text-gray-700">
                 <p className="text-lg leading-relaxed mb-4">
-                  Pakistan Trails was born from a simple belief: that Pakistan's natural beauty 
+                  Pakistan Trails was born from a simple belief: that Pakistan&apos;s natural beauty 
                   deserves to be shared with the world. What started as a passion project to 
-                  document our hiking adventures has grown into Pakistan's most comprehensive 
+                  document our hiking adventures has grown into Pakistan&apos;s most comprehensive 
                   resource for outdoor exploration.
                 </p>
                 <p className="text-lg leading-relaxed mb-4">
-                  We've personally hiked, mapped, and documented over 50 trails across Pakistan, 
+                  We&apos;ve personally hiked, mapped, and documented over 50 trails across Pakistan, 
                   from the towering peaks of Hunza to the hidden valleys of Swat. Every trail 
                   on our platform has been GPS-tracked, photographed, and carefully documented 
                   to ensure accuracy and safety.
                 </p>
                 <p className="text-lg leading-relaxed">
-                  Our mission is simple: to make Pakistan's incredible natural beauty accessible 
+                  Our mission is simple: to make Pakistan&apos;s incredible natural beauty accessible 
                   to everyone, while promoting responsible tourism and environmental conservation.
                 </p>
               </div>
@@ -74,7 +87,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              To showcase Pakistan's natural beauty while promoting responsible tourism and 
+              To showcase Pakistan&apos;s natural beauty while promoting responsible tourism and 
               environmental conservation
             </p>
           </div>
@@ -90,7 +103,7 @@ export default function AboutPage() {
               <CardContent>
                 <p className="text-gray-600">
                   We carefully document every trail, ensuring future generations can enjoy 
-                  Pakistan's natural beauty while preserving its pristine condition.
+                  Pakistan&apos;s natural beauty while preserving its pristine condition.
                 </p>
               </CardContent>
             </Card>
@@ -104,8 +117,8 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  We're building a community of outdoor enthusiasts who share our passion 
-                  for Pakistan's mountains, valleys, and hidden gems.
+                  We&apos;re building a community of outdoor enthusiasts who share our passion 
+                  for Pakistan&apos;s mountains, valleys, and hidden gems.
                 </p>
               </CardContent>
             </Card>
@@ -183,27 +196,17 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Impact</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Since our launch, we've helped thousands of adventurers discover Pakistan's beauty
+              Since our launch, we&apos;ve helped thousands of adventurers discover Pakistan&apos;s beauty
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">50+</div>
-              <div className="text-sm text-gray-600">Trails Mapped</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">25+</div>
-              <div className="text-sm text-gray-600">Travel Guides</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">10K+</div>
-              <div className="text-sm text-gray-600">Happy Explorers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">100+</div>
-              <div className="text-sm text-gray-600">Adventure Stories</div>
-            </div>
+            {stats.map((stat: Stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -211,7 +214,7 @@ export default function AboutPage() {
         <section className="bg-primary rounded-lg p-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Join Our Community</h2>
           <p className="text-lg text-primary-foreground/90 mb-6 max-w-2xl mx-auto">
-            Be part of Pakistan's growing outdoor community. Share your adventures, 
+            Be part of Pakistan&apos;s growing outdoor community. Share your adventures, 
             discover new trails, and connect with fellow explorers.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
