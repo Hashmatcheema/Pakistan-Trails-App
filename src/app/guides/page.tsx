@@ -48,7 +48,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
       <section className="bg-gradient-to-r from-primary-500 to-secondary-500 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight text-black sm:text-5xl">
               Pakistan Travel Guides
             </h1>
             <p className="mt-4 text-lg text-primary-50 sm:text-xl">
@@ -62,7 +62,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
         <div className="flex flex-col lg:flex-row lg:gap-8">
           {/* Sidebar with Filters */}
           <div className="lg:w-80">
-            <Card>
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Filter by Region</CardTitle>
               </CardHeader>

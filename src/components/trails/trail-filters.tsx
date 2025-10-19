@@ -47,7 +47,7 @@ export function TrailFilters({ regions, currentFilters }: TrailFiltersProps) {
   const hasActiveFilters = Object.values(currentFilters).some(value => value !== undefined && value !== '')
 
   return (
-    <Card>
+    <Card className="mb-8"> {/* Added margin-bottom here */}
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Filters</CardTitle>
@@ -74,7 +74,7 @@ export function TrailFilters({ regions, currentFilters }: TrailFiltersProps) {
         </div>
       </CardHeader>
       
-      <CardContent className={`space-y-6 ${isOpen ? 'block' : 'hidden lg:block'}`}>
+      <CardContent className={`space-y-6 pb-6 ${isOpen ? 'block' : 'hidden lg:block'}`}> {/* Added padding-bottom here */}
         {/* Search */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

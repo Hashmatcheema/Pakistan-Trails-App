@@ -5,6 +5,11 @@ import { ArrowRight, MapPin, Clock, Mountain, Users, Star, Play } from 'lucide-r
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getFeaturedTrails, getFeaturedGuides, getFeaturedBlogPosts } from '@/lib/database'
+import { TrailMap } from '@/components/trails/trail-map'
+import { getTrails } from '@/lib/database'
+import { Suspense } from 'react'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
 
 // Hero Section Component
 function HeroSection() {
@@ -43,7 +48,7 @@ function HeroSection() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-gray-900">
+              <Button asChild variant="outline" size="lg" className="border-white text-black hover:bg-white hover:text-gray-900">
                 <Link href="/trails">
                   Explore Trails
                 </Link>
@@ -193,8 +198,13 @@ async function LatestBlogStories() {
   )
 }
 
-// Interactive Trail Map Preview
-function TrailMapPreview() {
+
+
+async function TrailMapPreview() {
+  // Fetch limited trails for map preview
+  const trailsResult = await getTrails({})
+  const { data: trails } = trailsResult
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -208,22 +218,22 @@ function TrailMapPreview() {
         </div>
 
         <div className="mt-12">
-          <Card className="overflow-hidden">
-            <div className="relative h-96 bg-gray-200">
-              {/* Map placeholder - will be replaced with actual Mapbox component */}
-              <div className="flex h-full items-center justify-center">
+          <div className="overflow-hidden rounded-lg border bg-white">
+            <Suspense fallback={
+              <div className="flex h-96 items-center justify-center bg-gray-100 rounded-lg">
                 <div className="text-center">
-                  <MapPin className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-lg font-medium text-gray-600">
-                    Interactive Map Coming Soon
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Powered by Mapbox
-                  </p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-sm text-gray-600">Loading map...</p>
                 </div>
               </div>
-            </div>
-            <CardContent className="p-6">
+            }>
+              <div className="h-96">
+                <TrailMap trails={trails} />
+              </div>
+            </Suspense>
+          </div>
+
+          <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold">Explore All Trails</h3>
@@ -239,13 +249,11 @@ function TrailMapPreview() {
                 </Button>
               </div>
             </CardContent>
-          </Card>
         </div>
       </div>
     </section>
   )
 }
-
 // Video Hub Teaser
 function VideoHubTeaser() {
   return (

@@ -131,7 +131,6 @@ export async function getGuides(page: number = 1, limit: number = 12, region?: s
         *,
         region:regions(name)
       `, { count: 'exact' })
-      .eq('status', 'published')
       .order('published_at', { ascending: false })
     
     if (region) {

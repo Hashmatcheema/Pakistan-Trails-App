@@ -73,7 +73,7 @@ export default async function TrailsPage({ searchParams }: TrailsPageProps) {
 
           {/* Main Content */}
           <div className="flex-1">
-            <div className="mb-6">
+            <div className="mt-6 mb-6">
               <h2 className="text-lg font-semibold text-gray-900">
                 {pagination.total} Trails Found
               </h2>

@@ -116,7 +116,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="mb-6">
+            <div className="mt-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 {pagination?.total || 0} Travel Guides
               </h2>
