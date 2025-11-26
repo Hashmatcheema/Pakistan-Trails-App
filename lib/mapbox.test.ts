@@ -117,7 +117,7 @@ describe('addTrailMarkers', () => {
         distance_km: 5,
         elevation_gain_m: 100,
         duration_h: 2,
-        start_point: null as any,
+        start_point: null as unknown as { lat: number; lng: number },
         end_point: { lat: 35.1, lng: 74.1 },
         photos: [],
         best_season: [],

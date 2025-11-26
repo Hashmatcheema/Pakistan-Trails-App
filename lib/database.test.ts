@@ -31,7 +31,7 @@ describe('getTrails', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
@@ -108,7 +108,7 @@ describe('getTrailBySlug', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
@@ -142,7 +142,7 @@ describe('getFeaturedTrails', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
@@ -174,7 +174,7 @@ describe('getGuides', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
@@ -210,7 +210,7 @@ describe('getRegions', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
@@ -242,7 +242,7 @@ describe('searchContent', () => {
 
   beforeEach(async () => {
     const { createServerSupabaseClient } = await import('../src/lib/supabase')
-    mockClient = await createServerSupabaseClient() as any
+    mockClient = await createServerSupabaseClient() as ReturnType<typeof createMockSupabaseClient>
     mockClient._clearMocks()
   })
 
