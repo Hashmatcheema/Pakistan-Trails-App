@@ -1,11 +1,29 @@
 //src/lib/database.ts
-import { createServerSupabaseClient, createStaticSupabaseClient, TABLES } from './supabase'
+import { createStaticSupabaseClient, TABLES } from './supabase'
 import { Trail, Guide, Itinerary, BlogPost, Region, TrailFilters, SearchResult } from '@/types'
+import { TrailFiltersSchema, PaginationSchema, SearchQuerySchema, SlugSchema, validateAndSanitizeSearch } from './validation'
+import { DatabaseError, ValidationError, NotFoundError } from './errors'
 
 // Trail operations
 export async function getTrails(filters?: TrailFilters, page = 1, limit = 12) {
   try {
-    const supabase = await createServerSupabaseClient()
+    // Validate pagination
+    const paginationResult = PaginationSchema.safeParse({ page, limit })
+    if (!paginationResult.success) {
+      throw new ValidationError('Invalid pagination parameters', undefined, { page, limit })
+    }
+    const { page: validatedPage, limit: validatedLimit } = paginationResult.data
+
+    // Validate filters if provided
+    if (filters) {
+      const filtersResult = TrailFiltersSchema.safeParse(filters)
+      if (!filtersResult.success) {
+        throw new ValidationError('Invalid filter parameters', undefined, filters)
+      }
+      filters = filtersResult.data
+    }
+
+    const supabase = createStaticSupabaseClient()
     
     let query = supabase
       .from(TABLES.TRAILS)
@@ -37,22 +55,260 @@ export async function getTrails(filters?: TrailFilters, page = 1, limit = 12) {
     }
 
     if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+      // Sanitize search query to prevent SQL injection
+      const sanitized = validateAndSanitizeSearch(filters.search)
+      // Use Supabase's ilike with proper escaping
+      query = query.or(`title.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
     }
 
     const { data, error, count } = await query
+      .range((validatedPage - 1) * validatedLimit, validatedPage * validatedLimit - 1)
+
+    if (error) {
+      throw new DatabaseError('Failed to fetch trails', { error, filters, page: validatedPage, limit: validatedLimit })
+    }
+
+    return {
+      data: data || [],
+      pagination: {
+        page: validatedPage,
+        limit: validatedLimit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / validatedLimit)
+      }
+    }
+  } catch (error) {
+    // Public pages should degrade gracefully
+    console.error('getTrails failed', error)
+    return {
+      data: [],
+      pagination: {
+        page: Number.isFinite(page) && page > 0 ? page : 1,
+        limit: Number.isFinite(limit) && limit > 0 ? limit : 12,
+        total: 0,
+        totalPages: 0,
+      },
+    }
+  }
+}
+
+// For static generation (minimal payload)
+export async function getTrailsForStatic() {
+  const supabase = createStaticSupabaseClient()
+
+  const { data, error } = await supabase
+    .from(TABLES.TRAILS)
+    .select('slug')
+    .not('published_at', 'is', null)
+
+  if (error) {
+    throw new DatabaseError('Failed to fetch trails for static generation', { error })
+  }
+
+  return data || []
+}
+
+export async function getTrailBySlug(slug: string): Promise<Trail | null> {
+  try {
+    // Validate slug format
+    const slugResult = SlugSchema.safeParse(slug)
+    if (!slugResult.success) {
+      return null
+    }
+
+    const supabase = createStaticSupabaseClient()
+    
+    const { data, error } = await supabase
+      .from(TABLES.TRAILS)
+      .select(`
+        *,
+        region:regions(*)
+      `)
+      .eq('slug', slugResult.data)
+      .not('published_at', 'is', null)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null
+      }
+      return null
+    }
+
+    if (!data) {
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('getTrailBySlug failed', error)
+    return null
+  }
+}
+
+export async function getFeaturedTrails(limit = 6): Promise<Trail[]> {
+  try {
+    // Validate limit
+    if (limit < 1 || limit > 100) {
+      throw new ValidationError('Limit must be between 1 and 100', 'limit', limit)
+    }
+
+    const supabase = createStaticSupabaseClient()
+  
+    const { data, error } = await supabase
+      .from(TABLES.TRAILS)
+      .select(`
+        *,
+        region:regions(*)
+      `)
+      .eq('is_featured', true)
+      .not('published_at', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('getFeaturedTrails failed', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('getFeaturedTrails failed', error)
+    return []
+  }
+}
+
+// Guide operations
+export async function getGuides(page: number = 1, limit: number = 12, region?: string) {
+  try {
+    const supabase = createStaticSupabaseClient()
+
+    let query = supabase
+      .from(TABLES.GUIDES)
+      .select(
+        `
+          *,
+          region:regions(name)
+        `,
+        { count: 'exact' }
+      )
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+
+    if (region) {
+      query = query.eq('region_id', region)
+    }
+
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+
+    const { data, error, count } = await query.range(from, to)
+    if (error) {
+      console.error('getGuides failed', error)
+      return {
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      }
+    }
+
+    const totalPages = count ? Math.ceil(count / limit) : 0
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages,
+      },
+    }
+  } catch (error) {
+    console.error('getGuides failed', error)
+    return {
+      data: [],
+      pagination: { page, limit, total: 0, totalPages: 0 },
+    }
+  }
+}
+
+export async function getGuideBySlug(slug: string): Promise<Guide | null> {
+  try {
+    // Validate slug format
+    const slugResult = SlugSchema.safeParse(slug)
+    if (!slugResult.success) {
+      return null
+    }
+
+    const supabase = createStaticSupabaseClient()
+  
+    const { data, error } = await supabase
+      .from(TABLES.GUIDES)
+      .select(`
+        *,
+        region:regions(*)
+      `)
+      .eq('slug', slugResult.data)
+      .not('published_at', 'is', null)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null
+      }
+      return null
+    }
+
+    if (!data) {
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('getGuideBySlug failed', error)
+    return null
+  }
+}
+
+export async function getFeaturedGuides(limit = 4): Promise<Guide[]> {
+  try {
+    const supabase = createStaticSupabaseClient()
+
+    const { data, error } = await supabase
+      .from(TABLES.GUIDES)
+      .select(`
+        *,
+        region:regions(*)
+      `)
+      .not('published_at', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('getFeaturedGuides failed', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('getFeaturedGuides failed', error)
+    return []
+  }
+}
+
+// Itinerary operations
+export async function getItineraries(page = 1, limit = 12) {
+  try {
+    const supabase = createStaticSupabaseClient()
+
+    const { data, error, count } = await supabase
+      .from(TABLES.ITINERARIES)
+      .select('*', { count: 'exact' })
+      .not('published_at', 'is', null)
+      .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
 
     if (error) {
-      console.error('Error fetching trails:', error)
+      console.error('getItineraries failed', error)
       return {
         data: [],
-        pagination: {
-          page,
-          limit,
-          total: 0,
-          totalPages: 0
-        }
+        pagination: { page, limit, total: 0, totalPages: 0 },
       }
     }
 
@@ -62,367 +318,202 @@ export async function getTrails(filters?: TrailFilters, page = 1, limit = 12) {
         page,
         limit,
         total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
+        totalPages: Math.ceil((count || 0) / limit),
+      },
     }
   } catch (error) {
-    console.error('Unexpected error in getTrails:', error)
+    console.error('getItineraries failed', error)
     return {
       data: [],
-      pagination: {
-        page,
-        limit,
-        total: 0,
-        totalPages: 0
-      }
-    }
-  }
-}
-
-export async function getTrailBySlug(slug: string): Promise<Trail | null> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.TRAILS)
-    .select(`
-      *,
-      region:regions(*)
-    `)
-    .eq('slug', slug)
-    .not('published_at', 'is', null)
-    .single()
-
-  if (error) {
-    console.error('Error fetching trail:', error)
-    return null
-  }
-  return data
-}
-
-export async function getFeaturedTrails(limit = 6): Promise<Trail[]> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.TRAILS)
-    .select(`
-      *,
-      region:regions(*)
-    `)
-    .eq('is_featured', true)
-    .not('published_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) {
-    console.error('Error fetching featured trails:', error)
-    return []
-  }
-  return data || []
-}
-
-// Guide operations
-export async function getGuides(page: number = 1, limit: number = 12, region?: string) {
-  try {
-    const supabase = await createServerSupabaseClient()
-    
-    let query = supabase
-      .from('guides')
-      .select(`
-        *,
-        region:regions(name)
-      `, { count: 'exact' })
-      .order('published_at', { ascending: false })
-    
-    if (region) {
-      query = query.eq('region_id', region)
-    }
-    
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-    
-    const { data, error: guidesError, count } = await query.range(from, to)
-    
-    if (guidesError) throw guidesError
-    
-    const totalPages = count ? Math.ceil(count / limit) : 0
-    
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages,
-      }
-    }
-  } catch (error) {
-    // Fallback to static client if server client fails
-    const supabase = createStaticSupabaseClient()
-    
-    let query = supabase
-      .from('guides')
-      .select('*', { count: 'exact' })
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-    
-    if (region) {
-      query = query.eq('region_id', region)
-    }
-    
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-    
-    const { data, error: staticError, count } = await query.range(from, to)
-    
-    if (staticError) {
-      console.error('Error fetching guides:', staticError)
-      return { data: [], pagination: null }
-    }
-    
-    const totalPages = count ? Math.ceil(count / limit) : 0
-    
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages,
-      }
-    }
-  }
-}
-
-export async function getGuideBySlug(slug: string): Promise<Guide | null> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.GUIDES)
-    .select(`
-      *,
-      region:regions(*)
-    `)
-    .eq('slug', slug)
-    .not('published_at', 'is', null)
-    .single()
-
-  if (error) {
-    console.error('Error fetching guide:', error)
-    return null
-  }
-  return data
-}
-
-export async function getFeaturedGuides(limit = 4): Promise<Guide[]> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.GUIDES)
-    .select(`
-      *,
-      region:regions(*)
-    `)
-    .not('published_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) {
-    console.error('Error fetching featured guides:', error)
-    return []
-  }
-  return data || []
-}
-
-// Itinerary operations
-export async function getItineraries(page = 1, limit = 12) {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error, count } = await supabase
-    .from(TABLES.ITINERARIES)
-    .select('*', { count: 'exact' })
-    .not('published_at', 'is', null)
-    .order('created_at', { ascending: false })
-    .range((page - 1) * limit, page * limit - 1)
-
-  if (error) {
-    console.error('Error fetching itineraries:', error)
-    return {
-      data: [],
-      pagination: {
-        page,
-        limit,
-        total: 0,
-        totalPages: 0
-      }
-    }
-  }
-
-  return {
-    data: data || [],
-    pagination: {
-      page,
-      limit,
-      total: count || 0,
-      totalPages: Math.ceil((count || 0) / limit)
+      pagination: { page, limit, total: 0, totalPages: 0 },
     }
   }
 }
 
 export async function getItineraryBySlug(slug: string): Promise<Itinerary | null> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.ITINERARIES)
-    .select('*')
-    .eq('slug', slug)
-    .not('published_at', 'is', null)
-    .single()
+  try {
+    const supabase = createStaticSupabaseClient()
 
-  if (error) {
-    console.error('Error fetching itinerary:', error)
+    const { data, error } = await supabase
+      .from(TABLES.ITINERARIES)
+      .select('*')
+      .eq('slug', slug)
+      .not('published_at', 'is', null)
+      .single()
+
+    if (error) return null
+    return data || null
+  } catch (error) {
+    console.error('getItineraryBySlug failed', error)
     return null
   }
-  return data
 }
 
 // Blog operations
 export async function getBlogPosts(page = 1, limit = 12) {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error, count } = await supabase
-    .from(TABLES.BLOG_POSTS)
-    .select('*', { count: 'exact' })
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .range((page - 1) * limit, page * limit - 1)
+  try {
+    const supabase = createStaticSupabaseClient()
 
-  if (error) {
-    console.error('Error fetching blog posts:', error)
+    const { data, error, count } = await supabase
+      .from(TABLES.BLOG_POSTS)
+      .select('*', { count: 'exact' })
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1)
+
+    if (error) {
+      console.error('getBlogPosts failed', error)
+      return {
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      }
+    }
+
     return {
-      data: [],
+      data: data || [],
       pagination: {
         page,
         limit,
-        total: 0,
-        totalPages: 0
-      }
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+      },
     }
-  }
-
-  return {
-    data: data || [],
-    pagination: {
-      page,
-      limit,
-      total: count || 0,
-      totalPages: Math.ceil((count || 0) / limit)
+  } catch (error) {
+    console.error('getBlogPosts failed', error)
+    return {
+      data: [],
+      pagination: { page, limit, total: 0, totalPages: 0 },
     }
   }
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.BLOG_POSTS)
-    .select('*')
-    .eq('slug', slug)
-    .not('published_at', 'is', null)
-    .single()
+  try {
+    const supabase = createStaticSupabaseClient()
 
-  if (error) {
-    console.error('Error fetching blog post:', error)
+    const { data, error } = await supabase
+      .from(TABLES.BLOG_POSTS)
+      .select('*')
+      .eq('slug', slug)
+      .not('published_at', 'is', null)
+      .single()
+
+    if (error) return null
+    return data || null
+  } catch (error) {
+    console.error('getBlogPostBySlug failed', error)
     return null
   }
-  return data
 }
 
 export async function getFeaturedBlogPosts(limit = 3): Promise<BlogPost[]> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.BLOG_POSTS)
-    .select('*')
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(limit)
+  try {
+    const supabase = createStaticSupabaseClient()
 
-  if (error) {
-    console.error('Error fetching featured blog posts:', error)
+    const { data, error } = await supabase
+      .from(TABLES.BLOG_POSTS)
+      .select('*')
+      .not('published_at', 'is', null)
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('getFeaturedBlogPosts failed', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('getFeaturedBlogPosts failed', error)
     return []
   }
-  return data || []
 }
 
 // Region operations
 export async function getRegions(): Promise<Region[]> {
-  const supabase = await createServerSupabaseClient()
-  
-  const { data, error } = await supabase
-    .from(TABLES.REGIONS)
-    .select('*')
-    .order('name', { ascending: true })
+  try {
+    const supabase = createStaticSupabaseClient()
 
-  if (error) {
-    console.error('Error fetching regions:', error)
+    const { data, error } = await supabase
+      .from(TABLES.REGIONS)
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('getRegions failed', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('getRegions failed', error)
     return []
   }
-  return data || []
 }
 
 // Search operations
 export async function searchContent(query: string, limit = 20): Promise<SearchResult[]> {
-  const supabase = await createServerSupabaseClient()
+  try {
+    // Validate search query
+    const searchResult = SearchQuerySchema.safeParse({ query, limit })
+    if (!searchResult.success) {
+      throw new ValidationError('Invalid search query', 'query', { query, limit })
+    }
+
+    const { query: validatedQuery, limit: validatedLimit } = searchResult.data
+
+    // Sanitize search query to prevent SQL injection
+    const sanitizedQuery = validateAndSanitizeSearch(validatedQuery)
+    const searchTerm = `%${sanitizedQuery}%`
+    
+    const supabase = createStaticSupabaseClient()
+    const perCategoryLimit = Math.max(1, Math.floor(validatedLimit / 4))
   
-  const searchTerm = `%${query}%`
-  
-  // Search trails
-  const { data: trails, error: trailsError } = await supabase
-    .from(TABLES.TRAILS)
-    .select('id, title, description, slug, featured_image, published_at')
-    .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
-    .not('published_at', 'is', null)
-    .limit(limit / 4)
+    // Search trails
+    const { data: trails, error: trailsError } = await supabase
+      .from(TABLES.TRAILS)
+      .select('id, title, description, slug, featured_image, published_at')
+      .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
+      .not('published_at', 'is', null)
+      .limit(perCategoryLimit)
 
-  if (trailsError) {
-    console.error('Error searching trails:', trailsError)
-  }
+    if (trailsError) {
+      throw new DatabaseError('Failed to search trails', { error: trailsError, query: sanitizedQuery })
+    }
 
-  // Search guides
-  const { data: guides, error: guidesError } = await supabase
-    .from(TABLES.GUIDES)
-    .select('id, title, excerpt, slug, featured_image, published_at')
-    .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
-    .not('published_at', 'is', null)
-    .limit(limit / 4)
+    // Search guides
+    const { data: guides, error: guidesError } = await supabase
+      .from(TABLES.GUIDES)
+      .select('id, title, excerpt, slug, featured_image, published_at')
+      .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
+      .not('published_at', 'is', null)
+      .limit(perCategoryLimit)
 
-  if (guidesError) {
-    console.error('Error searching guides:', guidesError)
-  }
+    if (guidesError) {
+      throw new DatabaseError('Failed to search guides', { error: guidesError, query: sanitizedQuery })
+    }
 
-  // Search blog posts
-  const { data: posts, error: postsError } = await supabase
-    .from(TABLES.BLOG_POSTS)
-    .select('id, title, excerpt, slug, featured_image, published_at')
-    .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
-    .not('published_at', 'is', null)
-    .limit(limit / 4)
+    // Search blog posts
+    const { data: posts, error: postsError } = await supabase
+      .from(TABLES.BLOG_POSTS)
+      .select('id, title, excerpt, slug, featured_image, published_at')
+      .or(`title.ilike.${searchTerm},excerpt.ilike.${searchTerm}`)
+      .not('published_at', 'is', null)
+      .limit(perCategoryLimit)
 
-  if (postsError) {
-    console.error('Error searching blog posts:', postsError)
-  }
+    if (postsError) {
+      throw new DatabaseError('Failed to search blog posts', { error: postsError, query: sanitizedQuery })
+    }
 
-  // Search itineraries
-  const { data: itineraries, error: itinerariesError } = await supabase
-    .from(TABLES.ITINERARIES)
-    .select('id, title, description, slug, featured_image, published_at')
-    .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
-    .not('published_at', 'is', null)
-    .limit(limit / 4)
+    // Search itineraries
+    const { data: itineraries, error: itinerariesError } = await supabase
+      .from(TABLES.ITINERARIES)
+      .select('id, title, description, slug, featured_image, published_at')
+      .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
+      .not('published_at', 'is', null)
+      .limit(perCategoryLimit)
 
-  if (itinerariesError) {
-    console.error('Error searching itineraries:', itinerariesError)
-  }
+    if (itinerariesError) {
+      throw new DatabaseError('Failed to search itineraries', { error: itinerariesError, query: sanitizedQuery })
+    }
 
   const results: SearchResult[] = [
     ...(trails || []).map(trail => ({
@@ -463,7 +554,11 @@ export async function searchContent(query: string, limit = 20): Promise<SearchRe
     }))
   ]
 
-  return results.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
+    return results.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
+  } catch (error) {
+    console.error('searchContent failed', error)
+    return []
+  }
 }
 
 // For static generation
@@ -473,11 +568,10 @@ export async function getGuidesForStatic() {
   const { data, error } = await supabase
     .from('guides')
     .select('slug')
-    .eq('status', 'published')
+    .not('published_at', 'is', null)
     
   if (error) {
-    console.error('Error fetching guides for static generation:', error)
-    return []
+    throw new DatabaseError('Failed to fetch guides for static generation', { error })
   }
   
   return data || []

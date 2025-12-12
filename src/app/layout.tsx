@@ -4,6 +4,7 @@ import { Inter, Lora, Poppins } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -89,11 +90,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${lora.variable} ${poppins.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-screen bg-background font-sans antialiased">
-        <div className="relative flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+        <ErrorBoundary>
+          <div className="relative flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+        </ErrorBoundary>
       </body>
     </html>
   );

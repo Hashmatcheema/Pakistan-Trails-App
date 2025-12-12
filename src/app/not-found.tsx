@@ -16,8 +16,8 @@ export default function NotFound() {
           Trail Not Found
         </h2>
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
-          Looks like you've wandered off the beaten path. The page you're looking for 
-          doesn't exist or has been moved.
+          Looks like you&apos;ve wandered off the beaten path. The page you&apos;re looking for 
+          doesn&apos;t exist or has been moved.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

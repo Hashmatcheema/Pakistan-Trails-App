@@ -1,0 +1,24 @@
+//src/app/robots.ts
+import { MetadataRoute } from 'next'
+import { env } from '@/lib/env'
+
+export default function robots(): MetadataRoute.Robots {
+  const baseUrl = env.NEXT_PUBLIC_SITE_URL
+
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/admin/'],
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: ['/api/', '/admin/'],
+      },
+    ],
+    sitemap: `${baseUrl}/sitemap.xml`,
+  }
+}
+

@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getBlogPosts } from '@/lib/database'
 import { formatDate } from '@/lib/utils'
 
+// Enable ISR (cache list page and revalidate periodically)
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Adventure Stories & Blog - Pakistan Trails',
   description: 'Read our latest adventure stories, hiking experiences, and travel tips from Pakistan\'s most beautiful destinations.',
@@ -55,7 +58,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               Adventure Stories
             </h1>
             <p className="mt-4 text-lg text-primary-foreground/90 sm:text-xl">
-              Real stories from the trails and hidden gems we've discovered
+              Real stories from the trails and hidden gems we&apos;ve discovered
             </p>
           </div>
         </div>
@@ -100,7 +103,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               </h2>
               {search && (
                 <p className="mt-2 text-gray-600">
-                  Results for "{search}"
+                  Results for &quot;{search}&quot;
                 </p>
               )}
             </div>

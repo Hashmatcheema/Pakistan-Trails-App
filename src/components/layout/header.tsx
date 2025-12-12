@@ -2,10 +2,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Menu, X, Search, Mountain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -20,6 +22,34 @@ const navigation = [
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [isAuthed, setIsAuthed] = useState(false)
+
+  const router = useRouter()
+  const supabase = useMemo(() => createBrowserSupabaseClient(), [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return
+      setIsAuthed(Boolean(data.session))
+    })
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthed(Boolean(session))
+    })
+
+    return () => {
+      isMounted = false
+      sub.subscription.unsubscribe()
+    }
+  }, [supabase])
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
@@ -62,9 +92,27 @@ export function Header() {
             </Button>
 
             {/* CTA Button */}
-            <Button asChild className="hidden sm:inline-flex">
-              <Link href="/contact">Plan Your Adventure</Link>
-            </Button>
+            <div className="hidden sm:flex items-center gap-2">
+              {isAuthed ? (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                  <Button onClick={handleSignOut} variant="default">
+                    Sign out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/login">Sign in</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/signup">Create account</Link>
+                  </Button>
+                </>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <Button
@@ -112,9 +160,25 @@ export function Header() {
                 </Link>
               ))}
               <div className="mt-4 flex flex-col space-y-2">
-                <Button asChild className="w-full">
-                  <Link href="/contact">Plan Your Adventure</Link>
-                </Button>
+                {isAuthed ? (
+                  <>
+                    <Button asChild className="w-full">
+                      <Link href="/admin">Admin</Link>
+                    </Button>
+                    <Button className="w-full" onClick={handleSignOut}>
+                      Sign out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild className="w-full">
+                      <Link href="/login">Sign in</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/signup">Create account</Link>
+                    </Button>
+                  </>
+                )}
                 <Button variant="outline" asChild className="w-full">
                   <Link href="/search">Search</Link>
                 </Button>

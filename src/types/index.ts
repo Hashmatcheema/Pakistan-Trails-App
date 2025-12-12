@@ -99,12 +99,19 @@ export interface DayPlan {
   notes?: string;
 }
 
+// Portable Text block structure (simplified)
+export type PortableTextBlock = {
+  _type: string;
+  _key: string;
+  [key: string]: unknown;
+}
+
 export interface BlogPost {
   id: string;
   slug: string;
   title: string;
   excerpt: string;
-  body: any; // Portable Text
+  body: PortableTextBlock[] | Record<string, unknown>[]; // Portable Text or JSON content
   tags: string[];
   category: string;
   featured_image: string;

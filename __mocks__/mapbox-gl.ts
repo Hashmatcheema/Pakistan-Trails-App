@@ -16,6 +16,11 @@ export class Map {
   private layers: MapStorage = new globalThis.Map()
   private markers: any[] = []
   private eventHandlers: FunctionMap = new globalThis.Map()
+  private canvas = {
+    style: {
+      cursor: '',
+    },
+  }
 
   constructor(options: any) {
     this.container = options.container
@@ -81,11 +86,7 @@ export class Map {
   }
 
   getCanvas() {
-    return {
-      style: {
-        cursor: '',
-      },
-    }
+    return this.canvas
   }
 
   // Test helpers
@@ -133,6 +134,7 @@ export class Popup {
   private html: string = ''
   private lngLat: [number, number] | null = null
   private offset: number = 0
+  private dom: HTMLElement | null = null
 
   constructor(options?: { offset?: number }) {
     if (options?.offset) {
@@ -142,6 +144,20 @@ export class Popup {
 
   setHTML(html: string) {
     this.html = html
+    return this
+  }
+
+  setDOMContent(node: any) {
+    // Mapbox accepts HTMLElement; we store it for inspection if needed.
+    if (node && typeof node === 'object') {
+      this.dom = node as HTMLElement
+      // Best-effort: preserve text in html for assertions/debug
+      try {
+        this.html = (node as HTMLElement).outerHTML || ''
+      } catch {
+        this.html = ''
+      }
+    }
     return this
   }
 

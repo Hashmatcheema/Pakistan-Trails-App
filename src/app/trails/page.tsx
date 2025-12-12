@@ -8,6 +8,10 @@ import { getTrails, getRegions } from '@/lib/database'
 import { TrailMap } from '@/components/trails/trail-map'
 import { TrailFilters } from '@/components/trails/trail-filters'
 import { TrailCard } from '@/components/trails/trail-card'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
+// Enable ISR (cache list page and revalidate periodically)
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Hiking Trails in Pakistan',
@@ -53,10 +57,10 @@ export default async function TrailsPage({ searchParams }: TrailsPageProps) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              Discover Pakistan's Hiking Trails
+              Discover Pakistan&apos;s Hiking Trails
             </h1>
             <p className="mt-4 text-lg text-primary-foreground/90 sm:text-xl">
-              Explore trails across Pakistan's most beautiful regions
+              Explore trails across Pakistan&apos;s most beautiful regions
             </p>
           </div>
         </div>

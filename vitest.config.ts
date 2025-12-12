@@ -33,6 +33,12 @@ export default defineConfig({
         '**/e2e/**',
         'vitest.setup.ts',
       ],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80,
+      },
     },
   },
   resolve: {

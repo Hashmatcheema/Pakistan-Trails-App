@@ -10,6 +10,9 @@ import { getTrails } from '@/lib/database'
 import { Suspense } from 'react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
+// Enable ISR (cache this page and revalidate periodically)
+export const revalidate = 300
+
 
 // Hero Section Component
 function HeroSection() {
@@ -73,7 +76,7 @@ async function FeaturedGuides() {
             Top Travel Guides
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Comprehensive guides to Pakistan's most beautiful destinations
+            Comprehensive guides to Pakistan&apos;s most beautiful destinations
           </p>
         </div>
 
@@ -139,7 +142,7 @@ async function LatestBlogStories() {
             Latest Adventure Stories
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Real stories from the trails and hidden gems we've discovered
+            Real stories from the trails and hidden gems we&apos;ve discovered
           </p>
         </div>
 
@@ -213,7 +216,7 @@ async function TrailMapPreview() {
             Interactive Trail Map
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Explore Pakistan's hiking trails with our interactive map
+            Explore Pakistan&apos;s hiking trails with our interactive map
           </p>
         </div>
 
@@ -363,39 +366,6 @@ function StatsSection() {
   )
 }
 
-// Newsletter Signup
-function NewsletterSignup() {
-  return (
-    <section className="py-16 bg-gray-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Get Monthly Trail Tips
-          </h2>
-          <p className="mt-4 text-lg text-gray-300">
-            Discover hidden gems, new trails, and exclusive travel tips delivered to your inbox
-          </p>
-        </div>
-
-        <div className="mt-8 max-w-md mx-auto">
-          <form className="flex flex-col gap-4 sm:flex-row">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-md border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Subscribe
-            </Button>
-          </form>
-          <p className="mt-2 text-xs text-gray-400 text-center">
-            No spam, unsubscribe at any time
-          </p>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 export default async function HomePage() {
   return (
@@ -406,7 +376,6 @@ export default async function HomePage() {
       <TrailMapPreview />
       <VideoHubTeaser />
       <StatsSection />
-      <NewsletterSignup />
     </div>
   )
 }

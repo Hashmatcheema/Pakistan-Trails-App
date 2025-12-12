@@ -17,12 +17,16 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getTrailBySlug, getTrails } from '@/lib/database'
+import { getTrailBySlug, getTrails, getTrailsForStatic } from '@/lib/database'
 import { formatDistance, formatDuration, formatElevation, getDifficultyColor, getDifficultyLabel, getRegionLabel } from '@/lib/utils'
 import { TrailMap } from '@/components/trails/trail-map'
 import { TrailGallery } from '@/components/trails/trail-gallery'
 import { TrailStats } from '@/components/trails/trail-stats'
 import { TrailSafety } from '@/components/trails/trail-safety'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
+// Enable ISR (cache detail pages and revalidate periodically)
+export const revalidate = 3600
 
 interface TrailPageProps {
    params: Promise<{ slug: string }>
@@ -62,8 +66,8 @@ export async function generateMetadata({ params }: TrailPageProps): Promise<Meta
 }
 
 export async function generateStaticParams() {
-  const trails = await getTrails()
-  return trails.data.map((trail) => ({
+  const trails = await getTrailsForStatic()
+  return trails.map((trail) => ({
     slug: trail.slug,
   }))
 }

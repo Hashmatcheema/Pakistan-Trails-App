@@ -2,13 +2,55 @@
 import mapboxgl from 'mapbox-gl'
 import { Trail, MapMarker } from '@/types'
 import type { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'
+import { logger } from './logger'
+
+function createTrailPopupContent(args: {
+  title: string
+  subtitle: string
+  href: string
+  linkText: string
+}): HTMLElement {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'p-2'
+
+  const h3 = document.createElement('h3')
+  h3.className = 'font-semibold text-sm'
+  h3.textContent = args.title
+  wrapper.appendChild(h3)
+
+  const p = document.createElement('p')
+  p.className = 'text-xs text-gray-600 mt-1'
+  p.textContent = args.subtitle
+  wrapper.appendChild(p)
+
+  const a = document.createElement('a')
+  a.className = 'text-blue-600 text-xs hover:underline'
+  a.href = args.href
+  a.textContent = args.linkText
+  wrapper.appendChild(a)
+
+  return wrapper
+}
+
+function createSimplePopupContent(label: string): HTMLElement {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'p-1'
+  const strong = document.createElement('strong')
+  strong.textContent = label
+  wrapper.appendChild(strong)
+  return wrapper
+}
 
 // Initialize Mapbox
 export function initializeMapbox() {
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+
+  if (typeof window !== 'undefined' && token) {
+    mapboxgl.accessToken = token
   } else {
-    console.error('Mapbox access token is missing or invalid');
+    // Keep this as a plain console error; tests expect this exact message
+    console.error('Mapbox access token is missing or invalid')
+    logger.error('Mapbox access token is missing or invalid')
   }
 }
 
@@ -39,13 +81,14 @@ export function addTrailMarkers(map: mapboxgl.Map, trails: Trail[]): MapMarker[]
         .setLngLat([trail.start_point.lng, trail.start_point.lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold text-sm">${trail.title}</h3>
-                <p class="text-xs text-gray-600 mt-1">${trail.distance_km}km • ${trail.difficulty}</p>
-                <a href="/trails/${trail.slug}" class="text-blue-600 text-xs hover:underline">View Details</a>
-              </div>
-            `)
+            .setDOMContent(
+              createTrailPopupContent({
+                title: trail.title,
+                subtitle: `${trail.distance_km}km • ${trail.difficulty}`,
+                href: `/trails/${trail.slug}`,
+                linkText: 'View Details',
+              })
+            )
         )
         .addTo(map)
       
@@ -99,14 +142,14 @@ export function addTrailRoute(map: mapboxgl.Map, trail: Trail) {
   if (trail.start_point) {
     new mapboxgl.Marker({ color: '#22c55e' })
       .setLngLat([trail.start_point.lng, trail.start_point.lat])
-      .setPopup(new mapboxgl.Popup().setHTML('<div class="p-1"><strong>Start</strong></div>'))
+      .setPopup(new mapboxgl.Popup().setDOMContent(createSimplePopupContent('Start')))
       .addTo(map)
   }
   
   if (trail.end_point) {
     new mapboxgl.Marker({ color: '#ef4444' })
       .setLngLat([trail.end_point.lng, trail.end_point.lat])
-      .setPopup(new mapboxgl.Popup().setHTML('<div class="p-1"><strong>End</strong></div>'))
+      .setPopup(new mapboxgl.Popup().setDOMContent(createSimplePopupContent('End')))
       .addTo(map)
   }
 }
@@ -265,13 +308,14 @@ export function createTrailClusters(map: mapboxgl.Map, trails: Trail[]) {
   
     new mapboxgl.Popup()
       .setLngLat(coordinates)
-      .setHTML(`
-        <div class="p-3">
-          <h3 class="font-semibold">${properties.title}</h3>
-          <p class="text-sm text-gray-600">${properties.distance}km • ${properties.difficulty}</p>
-          <a href="/trails/${properties.slug}" class="text-blue-600 text-sm hover:underline">View Details</a>
-        </div>
-      `)
+      .setDOMContent(
+        createTrailPopupContent({
+          title: properties.title,
+          subtitle: `${properties.distance}km • ${properties.difficulty}`,
+          href: `/trails/${properties.slug}`,
+          linkText: 'View Details',
+        })
+      )
       .addTo(map)
   })
   

@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getGuides, getRegions } from '@/lib/database'
 import { formatDate } from '@/lib/utils'
 
+// Enable ISR (cache list page and revalidate periodically)
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Pakistan Travel Guides - Complete Destination Guides',
   description: 'Comprehensive travel guides for Pakistan\'s most beautiful destinations. From Hunza to Skardu, Swat to Kumrat - plan your perfect adventure.',
@@ -52,7 +55,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
               Pakistan Travel Guides
             </h1>
             <p className="mt-4 text-lg text-primary-50 sm:text-xl">
-              Comprehensive guides to Pakistan's most beautiful destinations
+              Comprehensive guides to Pakistan&apos;s most beautiful destinations
             </p>
           </div>
         </div>
@@ -105,7 +108,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
               </h2>
               {search && (
                 <p className="mt-2 text-gray-600">
-                  Results for "{search}"
+                  Results for &quot;{search}&quot;
                 </p>
               )}
               {region && (
