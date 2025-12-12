@@ -2,7 +2,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { Mountain, Heart, Users, MapPin, Star, Award } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 // Define Stat interface for the stats array
 interface Stat {

@@ -3,7 +3,7 @@
 
 import { useEffect, useRef } from 'react'
 import { Trail } from '@/types'
-import { createMap, addTrailMarkers, createTrailClusters } from '@/lib/mapbox'
+import { createMap, createTrailClusters } from '@/lib/mapbox'
 
 interface TrailMapProps {
   trails: Trail[]

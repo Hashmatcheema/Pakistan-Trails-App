@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Menu, X, Search, Mountain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 const navigation = [

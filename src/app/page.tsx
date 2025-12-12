@@ -1,10 +1,10 @@
 //src/app/page.tsx
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Clock, Mountain, Users, Star, Play } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Users, Star, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { getFeaturedTrails, getFeaturedGuides, getFeaturedBlogPosts } from '@/lib/database'
+import { getFeaturedGuides, getFeaturedBlogPosts } from '@/lib/database'
 import { TrailMap } from '@/components/trails/trail-map'
 import { getTrails } from '@/lib/database'
 import { Suspense } from 'react'

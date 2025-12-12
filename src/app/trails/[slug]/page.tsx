@@ -9,16 +9,14 @@ import {
   Mountain, 
   Download, 
   ArrowLeft, 
-  AlertTriangle, 
   Calendar,
-  Users,
   Star,
   Share2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getTrailBySlug, getTrails, getTrailsForStatic } from '@/lib/database'
-import { formatDistance, formatDuration, formatElevation, getDifficultyColor, getDifficultyLabel, getRegionLabel } from '@/lib/utils'
+import { formatDistance, formatDuration, formatElevation, getDifficultyColor, getDifficultyLabel } from '@/lib/utils'
 import { TrailMap } from '@/components/trails/trail-map'
 import { TrailGallery } from '@/components/trails/trail-gallery'
 import { TrailStats } from '@/components/trails/trail-stats'

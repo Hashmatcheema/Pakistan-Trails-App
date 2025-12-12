@@ -2,7 +2,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Clock, Star, Users } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getGuides, getRegions } from '@/lib/database'

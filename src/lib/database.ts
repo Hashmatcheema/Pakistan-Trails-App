@@ -2,7 +2,7 @@
 import { createStaticSupabaseClient, TABLES } from './supabase'
 import { Trail, Guide, Itinerary, BlogPost, Region, TrailFilters, SearchResult } from '@/types'
 import { TrailFiltersSchema, PaginationSchema, SearchQuerySchema, SlugSchema, validateAndSanitizeSearch } from './validation'
-import { DatabaseError, ValidationError, NotFoundError } from './errors'
+import { DatabaseError, ValidationError } from './errors'
 
 // Trail operations
 export async function getTrails(filters?: TrailFilters, page = 1, limit = 12) {

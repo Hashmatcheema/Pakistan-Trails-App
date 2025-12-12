@@ -75,7 +75,7 @@ export function addTrailMarkers(map: mapboxgl.Map, trails: Trail[]): MapMarker[]
   
   trails.forEach(trail => {
     if (trail.start_point) {
-      const marker = new mapboxgl.Marker({
+      new mapboxgl.Marker({
         color: getDifficultyColor(trail.difficulty)
       })
         .setLngLat([trail.start_point.lng, trail.start_point.lat])
